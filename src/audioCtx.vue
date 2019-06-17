@@ -8,11 +8,12 @@
   </div>
 </template>
 <script>
+import { constants } from 'fs';
 export default {
   name:'audioCtx',
   props: {
     //播放源
-    //  url: 音频地址
+    //  src: 音频地址
     //  buffer: 音频流
     //  autoplay: 是否自动播放 
     //  loop: 是否循环播放
@@ -58,7 +59,8 @@ export default {
       //是否触发down事件
       hasDown: false,
       //手动触发stop事件
-      handStop: false
+      handStop: false,
+      timer:null
     }
   },
   beforeDestroy(){
@@ -72,10 +74,12 @@ export default {
     let slider = document.getElementById('slider');
     slider.onmousedown = this.downHandler;
     document.onmouseup = () => {
-      if(this.hasDown && this.playing){
-        this.handStop = true;
+      if(this.hasDown){
         this.hasDown = false;
-        this.playSound();
+        if( this.playing){
+          this.handStop = true;
+          this.playSound();
+        }
       }
       document.onmousemove = null; //弹起鼠标不做任何操作
     }
@@ -142,6 +146,10 @@ export default {
       self.source.buffer = self.audioBuffer;
       self.source.connect(self.audioCtx.destination);
       self.source.loop = self.options.loop;
+      if(self.totalTime - self.currentTime < 1){
+        self.currentTime = 0;
+        self.sliderBar = 0;
+      }
       self.timeFix = self.audioCtx.getOutputTimestamp().contextTime - self.currentTime;
       self.onTimeupdate();
       self.source.start(0, self.currentTime);
@@ -153,9 +161,10 @@ export default {
       //如果不是自当播放的需要加上时间校准
       self.source.onended = () => {
         if(!self.handStop){
+          self.pause = true;
           self.playing = false;
+          clearInterval(self.timer);
           self.$emit('end');
-          self.currentTime = 0;
         }
         self.handStop = false;
       };
@@ -189,12 +198,13 @@ export default {
     },
     // 当timeupdate事件每秒一次，用来更新音频流的当前播放时间
     onTimeupdate() {
-      let timer = setInterval(()=>{
-        if(this.currentTime >= this.totalTime){
-          clearInterval(timer);
+      this.timer = setInterval(()=>{
+        if(this.totalTime - this.currentTime < 1){
+          clearInterval(this.timer);
           return;
         }
         if(!this.pause && !this.hasDown){
+          this.handStop = false;
           let timestamp = this.audioCtx.getOutputTimestamp().contextTime;
           if (timestamp) {
             let timespan = timestamp - this.timeFix

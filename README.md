@@ -1,102 +1,82 @@
-# Vue 业务公共组件开发
+# AudioContext Playper
 
-  针对BG业务开发过程中发现，目前存在一些业务场景相似或一样的需求，对此我们希望能建立一套组件可复用标准及开发规范。按照功能区分，目前我们可以分为基础UI及业务组件。
-  
-> 组件化方案
+<p text-align="center">
+    <img alt="GitHub release" src="https://img.shields.io/badge/version-1.0.0-brightgreen.svg?style=for-the-badge"/>
+    <img alt="vue" src ="https://img.shields.io/badge/vue-2.5.16-blue.svg?style=for-the-badge"/>
+</p>
 
-- 单文件组件开发（SFC）
-- 单元测试编写
-- 支持`<script>`及模块化规范引入
-- 提交到组件仓库及发布到npm
+> A audio player based on AudioContext which can realize autoplay in chrome
+>
+> 用于规避谷歌浏览器必须用户点击才能播放音频的规定，也可用作一般音频播放器
 
-> 组件工程创建
+------
 
-目前组件开发工程采用种子工程方式，后续将集成到脚手架中，种子工程地址：
-- git：
-- svn：
+### 一、使用示例
 
-下载到本地后，种子工程为test-component，目录结构如下：
-<pre>
-test-component  
-│  .babelrc 
-│  package-lock.json
-│  package.json
-│  README.md
-│  
-├─build
-│      rollup.config.js  //构建配置文件
-│      
-├─dist                  
-│      test-component.esm.js
-│      test-component.min.js
-│      test-component.umd.js
-│      
-├─node_modules
-├─src
-│      index.js            //插件化设置
-│      test-component.vue  //组件
-│      
-└─test
-       test-component.spc.js  //单元测试
-</pre>
+ ![](./image/demo.gif)
 
-因目前暂时未做成脚手架，所以需要手动来基于组件模版修改，开发自己的组件，需要依次修改相关配置信息，主要在package.json中，比如name、version、main、build相关配置。
+### 二、组件功能
 
-> 组件命名规范
+- 可自动播放短音频
+- 播放可暂停/继续
+- 可拖动/点击设置播放进度
+- 可配置插件样式是否显示
+- 可配置是否循环播放音频
+- 支持加载ArrayBuffer二进制流文件
 
-关于组件命名规范，整体遵循vue官方相关规范，为了保持一致，暂且统一定义为短横线`-`连接(kebab-case)，针对于发布到npm的名称，我们约定命名空间以及组件格式规范如：
 
-- 业务组件，@edu/app-xxx
-- UI组件，@edu/eui-xxx
 
-> 组件开发及调试
+### 三、组件参数及事件
 
-组件开发不希望在工程中过多依赖开发服务，所以目前我们采用vue官方cli进行开发调试，如果已经安装了最新脚手架，我们可以直接运行:
-<pre>
-> cd test-component
-> npm install
-> vue serve src/test-component.vue --open`
-</pre>
-如果本地没有安装最新vue cli，可以全局安装后再试。
-<pre>
-> npm install @vue/cli -g
-</pre>
-服务启动成功，浏览器打开后显示当前我们开发的组件。
+**参数**
 
-> 组件单元测试
+| 参数        | 说明                                                         | 类型        | 默认值                                                   |
+| ----------- | ------------------------------------------------------------ | ----------- | -------------------------------------------------------- |
+| visible     | 是否需要显示                                                 | Boolean     | true                                                     |
+| options     | 传入参数对象                                                 | Object      | {src:'', autoplay: false,arrayBuffer: null, loop: false} |
+| src         | 音频文件地址(本地文件require后传入，在线文件记得处理跨域问题) | String      | ''                                                       |
+| autoplay    | 是否自动播放文件                                             | Boolean     | false                                                    |
+| arrayBuffer | 二进制文件流                                                 | arrayBuffer | null                                                     |
+| loop        | 是否循环播放音频                                             | Boolean     | false                                                    |
 
-目前组件单元测试引入vue官方提供test-utils工具进行测试，并基于jest运行测试脚本。
-组件开发完成，我们需要在test目录下编写单元测试脚本，关于vue组件单元测试，建议大家自主学习官方提供文档，运行测试脚本：
+**方法**
 
-<pre>
-> npm run test
-</pre>
+**start**  :开始回调事件。
 
-输出相关测试执行结果。
+**pause**  :暂停回调事件。
 
-> 组件打包构建
+**resume**  :恢复回调事件。
 
-目前我们完成了组件开发及单元测试，现在我们需要将组件进行构建，你可能会很好奇，为什么我们不能直接分享`.vue`文件呢？当然可以，但是这样你可能会让那些想直接通过js引用的人无法使用，所以我们需要打包构建，这里为了配置简单及打包文件大小等原因，我们选择了`rollup`，目前配置了三种格式，分别是`es`、`iife`、`umd`，运行打包脚本:
+**end**  :结束回调事件。
 
-<pre>
-> npm run build
-</pre>
 
-查看dist目录，输出三种格式文件，默认npm包指向umd文件引用。
 
-- test-component.esm.js
-- test-component.min.js
-- test-component.umd.js
+### 四、使用方法
 
-> 组件提交及发布
+- 1、安装依赖
 
-组件暂时直接发布到npm，整个提交及审核后续会有详细机制，暂不提交到git，同时因公司现有npm组件仓库存在相关问题，经过沟通后决定先使用现有自己搭建npm仓库，添加及切换到npm私服。
+  `npm set registry http://npm.flyui.cn  `
+  `npm install @edu/app-audioCtx`
 
-<pre>
-> npm install nrm -g
-> nrm add fly http://172.31.10.36:8090
-> nrm use fly
-> npm publish
-</pre>
+- 2 、页面引用
 
-打开现有组件私服`http://npm.flyui.cn/`，可以查看到已经发布的组件，若要在项目中使用，直接通过npm install方式安装即可。
+  `import  from '@edu/app-audioCtx'`
+
+  <template>
+    <audioCtx :options="options" 
+              :visible="visible"
+              @pause="pause"
+              @resume="resume"
+              @start="start"
+              @end="end"
+              v-if="load"></audioCtx>
+  </template>
+
+### 五、版本更新日志
+
+**日志**
+
+| Version | Description                                                  |
+| ------- | ------------------------------------------------------------ |
+| 1.0.0   | A audio player based on AudioContext which can realize autoplay in chrome |
+
