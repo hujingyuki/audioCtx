@@ -51,28 +51,7 @@
 
 
 
-### 四、使用方法
-
-- 1、安装依赖
-
-  `npm set registry http://npm.flyui.cn  `
-  `npm install @edu/app-audioCtx`
-
-- 2 、页面引用
-
-  `import  from '@edu/app-audioCtx'`
-
-  <template>
-    <audioCtx :options="options" 
-              :visible="visible"
-              @pause="pause"
-              @resume="resume"
-              @start="start"
-              @end="end"
-              v-if="load"></audioCtx>
-  </template>
-
-### 五、版本更新日志
+### 四、版本更新日志
 
 **日志**
 
